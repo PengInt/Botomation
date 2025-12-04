@@ -1,0 +1,55 @@
+import random, pygame
+
+pygame.init()
+
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=1)
+pygame.display.set_caption('Botomation')
+pygame.display.set_icon(pygame.image.load('Images/Roomba.png'))
+
+
+clickPos = ()
+
+def RECT(x, y, w, h, c):
+    cx = screen.get_width()/2
+    cy = screen.get_height()/2
+    pygame.draw.rect(screen, c, (cx-x*cx/500-w*cx/1000, cy-y*cy/500-h*cy/1000, w*cx/500, h*cy/500))
+
+def CHECKCLICK(x, y, w, h):
+    if len(clickPos) == 0:
+        return False
+    cx = screen.get_width()/2
+    cy = screen.get_height()/2
+    px = clickPos[0]
+    py = clickPos[1]
+    lmxmin = cx-x*cx/500-w*cx/1000
+    lmxmax = lmxmin+w*cx/500
+    lmymin = cy-y*cy/500-h*cy/1000
+    lmymax = lmymin+h*cy/500
+    if (px > lmxmin and px < lmxmax and py > lmymin and py < lmymax):
+        return True
+    else:
+        return False
+
+paused = False
+
+running = True
+while running:
+    pygame.display.update()
+    screen.fill((0, 0, 0))
+    clickPos = ()
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            running = False
+        elif e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_ESCAPE:
+                paused = not paused
+        elif e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+            clickPos = pygame.mouse.get_pos()
+    if paused:
+        RECT(0, 200, 100, 40, (255, 255, 255))
+        if len(clickPos) != 0:
+            if CHECKCLICK(0, 200, 100, 40):
+                paused = False
+    else:
+        pass    # code to run normally
+pygame.quit()
