@@ -9,10 +9,24 @@ pygame.display.set_icon(pygame.image.load('Images/Roomba.png'))
 
 clickPos = ()
 
-def RECT(x, y, w, h, c):
+def RECT(x: float, y: float, w: float, h: float, c: tuple) -> None:
     cx = screen.get_width()/2
     cy = screen.get_height()/2
-    pygame.draw.rect(screen, c, (cx-x*cx/500-w*cx/1000, cy-y*cy/500-h*cy/1000, w*cx/500, h*cy/500))
+    s = cy/500
+    pygame.draw.rect(screen, c, (cx-x*s-w*s/2, cy-y*s-h*s, w*s, h*s))
+def RECT2(x1: float, y1: float, x2: float, y2: float, c: tuple) -> None:
+    cx = screen.get_width()/2
+    cy = screen.get_height()/2
+    s = cy/500
+    if x1 > x2:
+        temp = x1
+        x1 = x2
+        x2 = temp
+    if y1 > y2:
+        temp = y1
+        y1 = y2
+        y2 = temp
+    pygame.draw.rect(screen, c, (x1*s, y1*s, x2*s, y2*s))
 
 def CHECKCLICK(x, y, w, h):
     if len(clickPos) == 0:
@@ -46,7 +60,7 @@ while running:
         elif e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
             clickPos = pygame.mouse.get_pos()
     if paused:
-        RECT(0, 200, 100, 40, (255, 255, 255))
+        RECT(0, 200, 200, 60, (255, 255, 255))
         if len(clickPos) != 0:
             if CHECKCLICK(0, 200, 100, 40):
                 paused = False
