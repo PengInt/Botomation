@@ -1,4 +1,4 @@
-import random, pygame
+import random, pygame, pathlib
 
 pygame.init()
 
@@ -13,7 +13,7 @@ def RECT(x: float, y: float, w: float, h: float, c: tuple) -> None:
     cx = screen.get_width()/2
     cy = screen.get_height()/2
     s = cy/500
-    pygame.draw.rect(screen, c, (cx-x*s-w*s/2, cy-y*s-h*s, w*s, h*s))
+    pygame.draw.rect(screen, c, (cx+x*s-w*s/2, cy-y*s-h*s, w*s, h*s))
 def RECT2(x1: float, y1: float, x2: float, y2: float, c: tuple) -> None:
     cx = screen.get_width()/2
     cy = screen.get_height()/2
@@ -26,7 +26,17 @@ def RECT2(x1: float, y1: float, x2: float, y2: float, c: tuple) -> None:
         temp = y1
         y1 = y2
         y2 = temp
-    pygame.draw.rect(screen, c, (x1*s, y1*s, x2*s, y2*s))
+    pygame.draw.rect(screen, c, (cx+x1*s, cy-y1*s, cx+x2*s, cy-y2*s))
+
+pygame.font.init()
+def TEXT(x: float, y: float, t: str, c: tuple, f: pathlib.Path, p: float) -> None:
+    cx = screen.get_width() / 2
+    cy = screen.get_height() / 2
+    s = cy / 500
+    font = pygame.font.Font(f, round(p*s))
+    text = font.render(t, 1, c)
+    w, h = text.get_width(), text.get_height()
+    screen.blit(text, (cx+x*s-w/2, cy-y*s-w/2))
 
 def CHECKCLICK(x, y, w, h):
     if len(clickPos) == 0:
@@ -35,10 +45,11 @@ def CHECKCLICK(x, y, w, h):
     cy = screen.get_height()/2
     px = clickPos[0]
     py = clickPos[1]
-    lmxmin = cx-x*cx/500-w*cx/1000
-    lmxmax = lmxmin+w*cx/500
-    lmymin = cy-y*cy/500-h*cy/1000
-    lmymax = lmymin+h*cy/500
+    s = cy/500
+    lmxmin = cx+x*s-w*s/2
+    lmxmax = lmxmin+w*s
+    lmymin = cy-y*s-h*s
+    lmymax = lmymin+h*s
     if (px > lmxmin and px < lmxmax and py > lmymin and py < lmymax):
         return True
     else:
@@ -61,6 +72,7 @@ while running:
             clickPos = pygame.mouse.get_pos()
     if paused:
         RECT(0, 200, 200, 60, (255, 255, 255))
+        TEXT(0, 200, 'RESUME', (0, 0, 0), 'Fonts/FiraCode-Regular.ttf', 20)
         if len(clickPos) != 0:
             if CHECKCLICK(0, 200, 100, 40):
                 paused = False
