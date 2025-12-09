@@ -46,6 +46,7 @@ def CHECKCLICK(x, y, w, h):
     px = clickPos[0]
     py = clickPos[1]
     s = cy/500
+    #                    cx+x*s-w*s/2, cy-y*s-h*s, w*s, h*s
     lmxmin = cx+x*s-w*s/2
     lmxmax = lmxmin+w*s
     lmymin = cy-y*s-h*s
@@ -72,9 +73,9 @@ while running:
             clickPos = pygame.mouse.get_pos()
     if paused:
         RECT(0, 200, 200, 60, (255, 255, 255))
-        TEXT(0, 200, 'RESUME', (0, 0, 0), 'Fonts/FiraCode-Regular.ttf', 20)
+        TEXT(0, 200, 'RESUME', (0, 0, 0), pathlib.Path('Fonts')/'FiraCode-Regular.ttf', 25)
         if len(clickPos) != 0:
-            if CHECKCLICK(0, 200, 100, 40):
+            if CHECKCLICK(0, 200, 200, 60):
                 paused = False
     else:
         pass    # code to run normally
