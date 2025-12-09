@@ -35,8 +35,9 @@ def TEXT(x: float, y: float, t: str, c: tuple, f: pathlib.Path, p: float) -> Non
     s = cy / 500
     font = pygame.font.Font(f, round(p*s))
     text = font.render(t, 1, c)
-    w, h = text.get_width(), text.get_height()
-    screen.blit(text, (cx+x*s-w/2, cy-y*s-w/2))
+    w, h = text.get_width(), font.get_ascent()
+    pygame.draw.rect(screen, (255, 0, 0), (cx+x*s-w/2, cy-y*s-h/2, w, h))
+    screen.blit(text, (cx+x*s-w/2, cy-y*s-h/2))
 
 def CHECKCLICK(x, y, w, h):
     if len(clickPos) == 0:
@@ -46,7 +47,6 @@ def CHECKCLICK(x, y, w, h):
     px = clickPos[0]
     py = clickPos[1]
     s = cy/500
-    #                    cx+x*s-w*s/2, cy-y*s-h*s, w*s, h*s
     lmxmin = cx+x*s-w*s/2
     lmxmax = lmxmin+w*s
     lmymin = cy-y*s-h*s
@@ -73,7 +73,7 @@ while running:
             clickPos = pygame.mouse.get_pos()
     if paused:
         RECT(0, 200, 200, 60, (255, 255, 255))
-        TEXT(0, 200, 'RESUME', (0, 0, 0), pathlib.Path('Fonts')/'FiraCode-Regular.ttf', 25)
+        TEXT(0, 200, 'RESUME', (0, 0, 0), None, 25)#pathlib.Path('Fonts')/'FiraCode-Regular.ttf', 25)
         if len(clickPos) != 0:
             if CHECKCLICK(0, 200, 200, 60):
                 paused = False
