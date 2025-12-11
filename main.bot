@@ -1,0 +1,4 @@
+with #BOTUTILS
+
+BOTUTILS.MOVE("forward")
+BOTUTILS.ATTACK(BOTUTILS.TARGET('closest', 'flamethrower'))
