@@ -1,0 +1,76 @@
+~ ====================     COMMENTS     ==================== ;
+
+~ this is a comment ;
+
+~ comments start with ~ and end with a ;
+
+~ comments are completely ignored by the computer, so you can write whatever you want in them (just make sure not to use semicolons in the middle of one, since that will end the comment prematurely, which can do all sorts of things to the code) ;
+
+~ use them to document your code for improved readability ;
+
+%DEFINE #INT ~ comments can be put anywhere in the code, even in the middle of a line ; thisIsAVariable = 12
+
+~ dotbot comments are multiline, which means
+											 that they can span multple lines! ;
+
+~ it isn't a necessity to put
+  2 spaces when switching lines, but it looks better like that, so it's what I do ;
+~ for example, this comment is
+perfectly fine in the eyes of the computer ;
+
+~ ====================  DOTBOT  BASICS  ==================== ;
+~ ====================     VARIABLES    ==================== ;
+
+~ First, I must mention that dotbot is case-insensitive, which means that capitalisation of anything apart from words in-between quotes (ex.: "abc") is not necessary, but it's generally better to capitalise most keywords, like DEFINE, INT, and other things.
+  Some terms, called variables, are camelCased (camelCase example: thisIsAVariable (in camelCasing, every word other than the first is capitalised, with no spaces nor underscores (_) in-between words. featuring underscores is functionally fine, but I personally don't like that coding style)) ;
+
+~ In every programming language, variables are like containers: You put a value in, it stores that value, and whenever you want, you can access that value or take it out and put a new one in.
+  In most programming languages, you need to specify the variable type. This is like putting a lable on a container that says 'NUMBERS ONLY!! NO EXCEPTIONS!!' and putting a number-shaped hole on the top to only let numbers in and out. ;
+
+%DEFINE #INT integerVariable = 4
+~ Above, you can see how to define a basic integer-type variable
+  1. %DEFINE
+  	In dotbot, the %DEFINE keyword is used to tell the code that you're defining a variable, function, or a class. For now, we will stick to just variables.
+  2. #INT
+  	In dotbot, stuff after the hashtag (#) determines the variable type. #INT means that it'll be an integer (whole numbers from        -infinity to +infinity). If it was #FLOAT instead, the variable would be of type float (floating point number, whiuch is like an integer, but it can be a fraction of a decimal number instead of just a whole number). For floats, when they're defined, if their value at the moment is whole, you must include a '.0' at the end. Example.: |
+																	  V ;
+%DEFINE #FLOAT floatVariable = 9.0
+%DEFINE #FLOAT anotherFloatVariable = 8.31
+
+~ 3. integerVarialbe
+	This is the name of the variable. You can call variables whatever you want, given that it doesn't start with a number, and doesn't include !, @, #, $, %, ^, &, *, (, ), -, +, =, <, >, ,, ., /, ?, ', ", ;, :, [, ], {, }, |, \, `, ~ or any non-standard latin letters (ex.: â, ì, ß)
+  4. =
+  	This is a vital part to defining variables, as whatever follows it is the initial value of the variable
+  5. 4
+  	In this case, the initial value of the variable integerVariable is 4, as it is what follows the equals sign (=) ;
+
+~ ====================  DOTBOT  BASICS  ==================== ;
+~ ====================     VARIABLES    ==================== ;
+~ ====================       TYPES      ==================== ;
+~ As you've discovered earlier, there are multiple variable types. Here they are:
+	1. INT (integer)                 - whole numbers
+	2. FLOAT (floating point number) - decimal numbers
+	3. BOOL (boolean)                - either TRUE or FALSE, never both or anything else
+	4. LIST                          - a list of values (of any variable type, even other lists)
+	5. OBJECT                        - an object (will expand about this further into the documentation, in CLASSES.bot)
+
+	List example: ;
+%DEFINE #INT &FLOAT &LIST listOfIntsAndFloats = [9, 12.2, 58912939, 1909.2999918, 0, 0.0]
+
+~   This is a variable called listOfIntsAndFloats which is a list containing integers and floats.
+	1. #INT
+	  As previously explained, this means that it's an integer
+	2. &FLOAT  and &LIST
+	  The and (&) symbol is used to indicate multiple types or sub-types (or a mix of both)
+	  In this case, it's a list (hence the &LIST) of integers (#INT) and floating point numbers (&FLOAT)
+
+  When a list or another variable is defined with multiple types, it means that you can swap it's value for another value of one of the types. For a list, it means that the items can each be different variable types, and they can each switch between the chosen types.
+
+  A variable's value can be changed at any time. Example: ;
+
+floatVariable = 6.9
+
+~ The value of the variable floatVariable went from 9.0 (as previously definesd) to 6.9, as the line above changed it
+
+  Accessing it's value is as simple as just putting it's name anywhere, as long as it's not in-between quotes (" ") ;
+

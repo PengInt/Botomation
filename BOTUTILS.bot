@@ -1,1 +1,62 @@
-PHYSICAL weapons = 
+SCRIPT.SetAttribute('case-sensitive', FALSE)
+~ Non-case-sensitive - capitalise however you want. (Default. Set just in case)
+  I personally prefer a bunch of capitals but variables (not functions) and function parameters are lowercase (camelCase), along with
+  attributes (camelCase) and string contents (normal text) and object references within the object creation function ('this'). ;
+
+
+%DEFINE #OBJECT &CLASS FIRE -> {
+	~ A class to store parameters for flamethrower fires (duration, DPS, ease to put out). ;
+	%DEFINE #FUNCTION &OBJECT-CREATION () -> {
+		%DEFINE #ATTRIBUTE &FLOAT &MULTIPLE -> {
+			damage = 2.0   ~ Damage (typical HP for a creature (at the start) is 100). ;
+			interval = 0.1 ~ Interval between target.fireTick() calls (in s).          ;
+			ease = 0.05    ~ Ease to put out the fire (chance to put it out).          ;
+		}
+	}
+}
+
+%DEFINE #OBJECT &CLASS WEAPON -> {
+	~ An object class for weapons, such as the starting flamethrower. ;
+	%DEFINE #FUNCTION &OBJECT-CREATION (type) -> {
+		%DEFINE #ATTRIBUTE &MULTIPLE -> {
+			#STRING type = type
+			IF (^type == 'flamethrower') -> {
+				#OBJECT &FIRE fire = NEW FIRE()
+				#INT magSize = 150     ~ Ammunition maximum capacity.                                                ;
+				#FLOAT fireRate = 30.0 ~ Ammunition usage per second.                                                ;
+				#FLOAT spread = 15.0   ~ Weapon's horisontal spread (in degrees).                                    ;
+				#FLOAT speed = 5.0     ~ Initial speed of the projectiles when leaving the weapon's barrel (in m/s). ;
+			}
+		}
+	}
+}
+
+%DEFINE #PHYSICAL &LIST weapons = SYSTEM.GETWEAPONS()
+
+SCRIPT.AddEventListner('weapon' ~ all weapon events (new weapon, weapon stat changed, weapon removed, etc.);, #FUNCTION -> {
+	weapons = SYSTEM.GETWEAPONS()
+} -> NONE)
+
+%DEFINE #OBJECT &CLASS ENEMY -> {
+	~ A class to make enemies ;
+	%DEFINE #FUNCTION &OBJECT-CREATION (difficulty, type) -> {
+		%DEFINE #ATTRIBUTE &MULTIPLE -> {
+			#STRING type = type
+			#FLOAT difficulty = difficulty
+			IF (^type == 'normal') -> {
+				#FLOAT hp = 100 * ^difficulty
+				#FLOAT weapon = NEW WEAPON('fists')
+			}
+		}
+		%DEFINE #METHOD ATTACK (target IS PLAYER) -> {
+			
+		}
+	}
+}
+
+%DEFINE #EXPORT &FUNCTION ATTACK (target IS ENEMY, weapon IS WEAPON) -> {
+	IF (weapon.type == 'flamethrower' AND NOT target.fireImmunity) -> {
+		target.onFire = TRUE
+		target.fireTick(weapon.fire)
+	}
+} -> NONE

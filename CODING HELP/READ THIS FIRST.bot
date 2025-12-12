@@ -1,0 +1,14 @@
+~ This is a file exclusively for explaining things relevant to the start of the game
+  BASICS.bot will provide general information on how the dotbot coding language works ;
+
+~ capitalisation on dotbot isn't necessary, unless it's between quotes ("aBc" or 'aBc') ;
+
+%WITH @BOTUTILS
+~ always include this line, as it lets you use bot things, such as attacking, moving, and other things. ;
+
+
+~ ATTACK - function (Keyword)
+	ATTACK takes 2 parameters: the target, and the weapon to attack with.
+	An ATTACk call should look something like as follows:
+		BOTUTILS.ATTACK(target, weapon)
+	1. target: an object of type ENEMY. Typically obtained through 

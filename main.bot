@@ -1,4 +1,7 @@
-with #BOTUTILS
+SCRIPT.SetAttribute('case-sensitive', FALSE) ~ Default is already false. Include line just in case. ;
+
+%WITH @BOTUTILS
+
 
 BOTUTILS.MOVE("forward")
-BOTUTILS.ATTACK(BOTUTILS.TARGET('closest', 'flamethrower'))
+BOTUTILS.ATTACK(BOTUTILS.TARGET("closest", "flamethrower"), BOTUTILS.GETWEAPON("flamethrower"))
