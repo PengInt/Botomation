@@ -1,4 +1,4 @@
-import random, pygame, pathlib
+import random, pygame, pathlib, game
 
 pygame.init()
 
@@ -6,6 +6,7 @@ screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=1)
 pygame.display.set_caption('Botomation')
 pygame.display.set_icon(pygame.image.load('Images/Roomba.png'))
 
+game.FE().printCont()
 
 clickPos = ()
 

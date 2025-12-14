@@ -26,37 +26,83 @@ SCRIPT.SetAttribute('case-sensitive', FALSE)
 				#FLOAT fireRate = 30.0 ~ Ammunition usage per second.                                                ;
 				#FLOAT spread = 15.0   ~ Weapon's horisontal spread (in degrees).                                    ;
 				#FLOAT speed = 5.0     ~ Initial speed of the projectiles when leaving the weapon's barrel (in m/s). ;
+				#FLOAT timeUntilShoot = 0.0;
+			} -> ELSEIF (^type == 'fists') -> {
+				#INT magSize = 0
+				#FLOAT fireRate = 0.4
+				#FLOAT spread = 0.0
+				#FLOAT speed = 100
+				#FLOAT range = 1.0
+				#FLOAT timeUntilShoot = 0.0
 			}
 		}
 	}
 }
 
-%DEFINE #PHYSICAL &LIST weapons = SYSTEM.GETWEAPONS()
-
-SCRIPT.AddEventListner('weapon' ~ all weapon events (new weapon, weapon stat changed, weapon removed, etc.);, #FUNCTION -> {
-	weapons = SYSTEM.GETWEAPONS()
-} -> NONE)
+%DEFINE #OBJECT &CLASS PLAYER -> {
+	~ Player class (object class incase multiplayer gets added :D) ;
+	%DEFINE #FUNCTION &OBJECT-CREATION -> {
+		%DEFINE #ATTRIBUTE &MULTIPLE -> {
+			#FLOAT &LIST pos = [0, 0]
+			#FLOAT hp = 100.0
+			#FLOAT speed = 2.0
+			#WEAPON &LIST weapons = SYSTEM.GETWEAPONS()
+		}
+		%DEFINE #BEHAVIOUR SCRIPT.eventListner('weapon' ~ all weapon events (new weapon, weapon stat changed, weapon removed, etc.);, #FUNCTION -> {
+			^weapons = SYSTEM.GETWEAPONS()
+		} -> NONE)
+	}
+}
 
 %DEFINE #OBJECT &CLASS ENEMY -> {
 	~ A class to make enemies ;
-	%DEFINE #FUNCTION &OBJECT-CREATION (difficulty, type) -> {
+	%DEFINE #FUNCTION &OBJECT-CREATION (difficulty IS FLOAT, type IS STRING, pos IS LIST) -> {
 		%DEFINE #ATTRIBUTE &MULTIPLE -> {
 			#STRING type = type
 			#FLOAT difficulty = difficulty
+			#FLOAT &LIST pos = pos
 			IF (^type == 'normal') -> {
-				#FLOAT hp = 100 * ^difficulty
-				#FLOAT weapon = NEW WEAPON('fists')
+				#FLOAT hp = 100.0 * ^difficulty
+				#FLOAT speed = 1.0 * (0.875 + 0.125 * ^difficulty)
+				#WEAPON weapon = NEW WEAPON('fists')
 			}
 		}
 		%DEFINE #METHOD ATTACK (target IS PLAYER) -> {
-			
-		}
+			IF (^weapon == 'fists' AND ((target.pos[0] - ^pos[0])**2 + (target.pos[1] - ^pos[1])**2)**0.5 <= ^attackRange) -> {
+				target.takeDamgae(5, 'physical')
+			}
+		} -> NONE
 	}
 }
+
+%DEFINE #EXPORT &FUNCTION GETWEAPON (type IS STRING) -> {
+	%GET localPlayer <world.json>
+	#WEAPON found = NONE
+	FOR (#INT i = 0 -> i < localPlayer.weapons.length -> i++) -> {
+		IF (localPlayer.weapons[i].type == type) -> {
+			found = localPlayer.weapons[i]
+		}
+	}
+} -> found
+
+%DEFINE #EXPORT &FUNCTION TARGET (which IS STRING type IS STRING) -> {
+	#WEAPON weapon = GETWEAPON(type)
+	IF (which == 'closest') -> {
+		%GET closestEnemy(%GET localPlayer <world.json>) <world.json> AS target
+	} -> ELSEIF (which == 'weakest') -> {
+		%GET weakestEnemyInRange(%GET localPlayer <world.json>) <world.json> AS target
+	} -> ELSEIF (which == 'strongest') -> {
+		%GET strongestEnemyInRange(%GET localPlayer <world.json>) <world.json> AS target
+	} -> ELSE -> {
+	
+	}
+} -> target
 
 %DEFINE #EXPORT &FUNCTION ATTACK (target IS ENEMY, weapon IS WEAPON) -> {
 	IF (weapon.type == 'flamethrower' AND NOT target.fireImmunity) -> {
 		target.onFire = TRUE
 		target.fireTick(weapon.fire)
+	} -> ELSE -> {
+	
 	}
 } -> NONE
