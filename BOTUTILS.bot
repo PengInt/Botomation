@@ -1,7 +1,8 @@
-SCRIPT.SetAttribute('case-sensitive', FALSE)
+SCRIPT.SetAttribute('case-sensitive', FALSE)    ~ This line has to be capitalised properly ;
 ~ Non-case-sensitive - capitalise however you want. (Default. Set just in case)
   I personally prefer a bunch of capitals but variables (not functions) and function parameters are lowercase (camelCase), along with
-  attributes (camelCase) and string contents (normal text) and object references within the object creation function ('this'). ;
+  attributes (camelCase) and string contents (normal text) ;
+SCRIPT.SetAttribute('module', TRUE)
 
 
 %DEFINE #OBJECT &CLASS FIRE -> {
@@ -56,7 +57,7 @@ SCRIPT.SetAttribute('case-sensitive', FALSE)
 
 %DEFINE #OBJECT &CLASS ENEMY -> {
 	~ A class to make enemies ;
-	%DEFINE #FUNCTION &OBJECT-CREATION (difficulty IS FLOAT, type IS STRING, pos IS LIST) -> {
+	%DEFINE #FUNCTION &OBJECT-CREATION (difficulty IS #FLOAT, type IS #STRING, pos IS #LIST) -> {
 		%DEFINE #ATTRIBUTE &MULTIPLE -> {
 			#STRING type = type
 			#FLOAT difficulty = difficulty
@@ -67,7 +68,7 @@ SCRIPT.SetAttribute('case-sensitive', FALSE)
 				#WEAPON weapon = NEW WEAPON('fists')
 			}
 		}
-		%DEFINE #METHOD ATTACK (target IS PLAYER) -> {
+		%DEFINE #METHOD ATTACK (target IS #PLAYER) -> {
 			IF (^weapon == 'fists' AND ((target.pos[0] - ^pos[0])**2 + (target.pos[1] - ^pos[1])**2)**0.5 <= ^attackRange) -> {
 				target.takeDamgae(5, 'physical')
 			}
@@ -75,7 +76,7 @@ SCRIPT.SetAttribute('case-sensitive', FALSE)
 	}
 }
 
-%DEFINE #EXPORT &FUNCTION GETWEAPON (type IS STRING) -> {
+%DEFINE #EXPORT &FUNCTION GETWEAPON (type IS #STRING) -> {
 	%GET localPlayer <world.json>
 	#WEAPON found = NONE
 	FOR (#INT i = 0 -> i < localPlayer.weapons.length -> i++) -> {
@@ -85,7 +86,7 @@ SCRIPT.SetAttribute('case-sensitive', FALSE)
 	}
 } -> found
 
-%DEFINE #EXPORT &FUNCTION TARGET (which IS STRING type IS STRING) -> {
+%DEFINE #EXPORT &FUNCTION TARGET (which IS #STRING, type IS #STRING) -> {
 	#WEAPON weapon = GETWEAPON(type)
 	IF (which == 'closest') -> {
 		%GET closestEnemy(%GET localPlayer <world.json>) <world.json> AS target
@@ -98,11 +99,11 @@ SCRIPT.SetAttribute('case-sensitive', FALSE)
 	}
 } -> target
 
-%DEFINE #EXPORT &FUNCTION ATTACK (target IS ENEMY, weapon IS WEAPON) -> {
+%DEFINE #EXPORT &FUNCTION ATTACK (target IS #ENEMY, weapon IS #WEAPON) -> {
 	IF (weapon.type == 'flamethrower' AND NOT target.fireImmunity) -> {
 		target.onFire = TRUE
 		target.fireTick(weapon.fire)
 	} -> ELSE -> {
-	
+
 	}
 } -> NONE

@@ -1,7 +1,10 @@
-import pygame, dotbot, os, platform
+import pygame, os, platform
+#import dotbot
 import pathlib as pl
+import main
 
-pygame.init()
+allVars = globals()
+
 
 screen = None
 
@@ -19,6 +22,7 @@ def CC():
 def init(s):
 	global screen
 	screen = s
+	main.init(screen)
 	return
 
 def MKI(key):
@@ -32,16 +36,69 @@ def MKI(key):
 			typing = False
 			return
 		return 'menu'
+	elif key == pygame.K_BACKSLASH and not typing:
+		return 'menu'
+	elif key == pygame.K_p and not typing:
+		return 'pause'
+
+class UI:
+	def __init__(this, pos: list, dim: list, parent, c: tuple):
+		this.x, this.y = pos
+		this.w, this.h = dim
+		this.p = parent
+		this.c = c
+	def draw(this):
+		main.ARECT3(this.x + this.p.pos[0], this.y + this.p.pos[1], this.w, this.h, this.c)
+
+class BTN (UI):
+	def __init__(this, pos: list, dim: list, parent, c: tuple, effect: str):
+		super().__init__(pos, dim, parent, c)
+		this.effect = effect
+	def onClick(this):
+		exec(this.effect, allVars)
 
 class WND: #Window
+	windows = []
+	tBarh = 30  # Title Bar Height
+	tBarp = 4   # Title Bar padding
+	@classmethod
+	def render(cls):
+		for window in cls.windows:
+			window.draw()
 	def __init__(this, x: float, y: float, w: float, h: float, n: str, i):
 		this.pos = [x, y]
 		this.size = [w, h]
 		this.name = n
 		this.icon = i
-		this.UI = []
-	def addUI(this, x, y, w, h, c):
-		this.UI.append([[x, y], [w, h]])
+		this.UI = [
+			UI(
+				[0, -WND.tBarh],
+				[this.size[0], WND.tBarh],
+				this,
+				(204, 204, 204)
+			),
+			BTN(
+				[this.size[0]-WND.tBarh+WND.tBarp, WND.tBarp-WND.tBarh],
+				[WND.tBarh-WND.tBarp*2, WND.tBarh-WND.tBarp*2],
+				this,
+				(255, 102, 102),
+				f'{this}.close()'
+			)
+		]
+		this.opened = True
+		WND.windows.append(this)
+	def addUI(this, ui: UI):
+		this.UI.append(UI)
+	def draw(this):
+		main.ARECT3(this.pos[0], this.pos[1], this.size[0], this.size[1], (102, 102, 102))
+		for ui in this.UI:
+			ui.draw()
+	def close(this):
+		del this
+	def min(this):
+		this.opened = False
+	def open(this):
+		this.opened = True
 
 class FE (WND): #File Explorer
 	def __init__(this):

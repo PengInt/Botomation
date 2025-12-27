@@ -1,13 +1,21 @@
-import random, pygame, pathlib, game
+#exec(open('dotbot.py', 'r').read())
+#exit()
+import random, math, pygame, pathlib, game
 
-pygame.init()
-
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=1)
-pygame.display.set_caption('Botomation')
-pygame.display.set_icon(pygame.image.load('Images/Roomba.png'))
-
-game.FE().printCont()
-
+if __name__ == '__main__':
+    pygame.init()
+    
+    info = pygame.display.Info()
+    sw, sh = info.current_w, info.current_h
+    screen = pygame.display.set_mode((sw, sh), pygame.SCALED | pygame.FULLSCREEN, vsync=1)
+    pygame.display.set_caption('Botomation')
+    pygame.display.set_icon(pygame.image.load('Images/Roomba.png'))
+else:
+    screen = None
+#game.FE().printCont()
+def init(s):
+    global screen
+    screen = s
 clickPos = ()
 
 def RECT(x: float, y: float, w: float, h: float, c: tuple) -> None:
@@ -23,13 +31,22 @@ def RECT2(x1: float, y1: float, x2: float, y2: float, c: tuple) -> None:
         temp = x1
         x1 = x2
         x2 = temp
-    if y1 > y2:
+    if y1 < y2:
         temp = y1
         y1 = y2
         y2 = temp
     pygame.draw.rect(screen, c, (cx+x1*s, cy-y1*s, cx+x2*s, cy-y2*s))
+    print((cx+x1*s, cy-y1*s, cx+x2*s, cy-y2*s))
+def ARECT3(x: float, y: float, w: float, h: float, c: tuple) -> None:
+    s = screen.get_height()/1000
+    """x = math.floor(x)
+    y = math.floor(y)
+    w = math.floor(w)
+    h = math.floor(h)"""
+    pygame.draw.rect(screen, c, (x*s, y*s, w*s, h*s))
 
-pygame.font.init()
+if __name__ == '__main__':
+    pygame.font.init()
 def TEXT(x: float, y: float, t: str, c: tuple, f: pathlib.Path, p: float) -> None:
     cx = screen.get_width() / 2
     cy = screen.get_height() / 2
@@ -60,24 +77,28 @@ def CHECKCLICK(x, y, w, h):
 paused = False
 
 running = True
-while running:
-    pygame.display.update()
-    screen.fill((0, 0, 0))
-    clickPos = ()
-    for e in pygame.event.get():
-        if e.type == pygame.QUIT:
-            running = False
-        elif e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_ESCAPE:
-                paused = not paused
-        elif e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
-            clickPos = pygame.mouse.get_pos()
-    if paused:
-        RECT(0, 200, 200, 60, (255, 255, 255))
-        TEXT(0, 200, 'RESUME', (0, 0, 0), None, 25)#pathlib.Path('Fonts')/'FiraCode-Regular.ttf', 25)
-        if len(clickPos) != 0:
-            if CHECKCLICK(0, 200, 200, 60):
-                paused = False
-    else:
-        pass    # code to run normally
-pygame.quit()
+if __name__ == '__main__':
+    game.init(screen)
+    wndow = game.WND(150, 100, 300, 200, 'Example WND', None)
+    while running:
+        pygame.display.update()
+        screen.fill((0, 0, 0))
+        game.WND.render()
+        clickPos = ()
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                running = False
+            elif e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    paused = not paused
+            elif e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                clickPos = pygame.mouse.get_pos()
+        if paused:
+            RECT(0, 200, 200, 60, (255, 255, 255))
+            TEXT(0, 200, 'RESUME', (0, 0, 0), pathlib.Path('Fonts')/'FiraCode-Regular.ttf', 25)
+            if len(clickPos) != 0:
+                if CHECKCLICK(0, 200, 200, 60):
+                    paused = False
+        else:
+            pass
+    pygame.quit()

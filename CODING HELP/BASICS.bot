@@ -1,19 +1,23 @@
 ~ ====================     COMMENTS     ==================== ;
 
-~ this is a comment ;
+~ This is a comment ;
 
-~ comments start with ~ and end with a ;
+~ Comments start with a ~ and end with a ;
 
-~ comments are completely ignored by the computer, so you can write whatever you want in them (just make sure not to use semicolons in the middle of one, since that will end the comment prematurely, which can do all sorts of things to the code) ;
+~ Comments are completely ignored by the computer, so you can write whatever you want in them (just make sure not to use semicolons in the middle of one, since that will end the comment prematurely, which can do all sorts of things to the code) ;
 
-~ use them to document your code for improved readability ;
+~ Use them to document your code for improved readability ;
 
-%DEFINE #INT ~ comments can be put anywhere in the code, even in the middle of a line ; thisIsAVariable = 12
+%DEFINE #INT ~ comments can be put almost anywhere in the code, even in the middle of a line ; thisIsAVariable = 12
+
+~ Just don't put them in the middle of a name or a value or a string ;
+~ Ex.:  31.22~ do NOT do this (semicolon here)771 ;
+~ This is because the code will read that line as:  31.22 771 instead of 31.22771 ;
 
 ~ dotbot comments are multiline, which means
 											 that they can span multple lines! ;
 
-~ it isn't a necessity to put
+~ It isn't a necessity to put
   2 spaces when switching lines, but it looks better like that, so it's what I do ;
 ~ for example, this comment is
 perfectly fine in the eyes of the computer ;
