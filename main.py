@@ -1,6 +1,6 @@
 #exec(open('dotbot.py', 'r').read())
 #exit()
-import random, math, pygame, pathlib, game
+import random, math, pygame, pathlib, game, time
 
 if __name__ == '__main__':
     pygame.init()
@@ -39,11 +39,12 @@ def RECT2(x1: float, y1: float, x2: float, y2: float, c: tuple) -> None:
     print((cx+x1*s, cy-y1*s, cx+x2*s, cy-y2*s))
 def ARECT3(x: float, y: float, w: float, h: float, c: tuple) -> None:
     s = screen.get_height()/1000
-    """x = math.floor(x)
-    y = math.floor(y)
-    w = math.floor(w)
-    h = math.floor(h)"""
     pygame.draw.rect(screen, c, (x*s, y*s, w*s, h*s))
+def AIMG3(x: float, y: float, w: float, h: float, p: pathlib.Path) -> None:
+    s = screen.get_height()/1000
+    img = pygame.image.load(p)
+    img = pygame.transform.scale(img, (w*s, h*s))
+    screen.blit(img, (x*s, y*s))
 
 if __name__ == '__main__':
     pygame.font.init()
@@ -76,13 +77,30 @@ def CHECKCLICK(x, y, w, h):
 
 paused = False
 
+lFT = time.time()
+cFT = time.time()
 running = True
 if __name__ == '__main__':
     game.init(screen)
-    wndow = game.WND(150, 100, 300, 200, 'Example WND', None)
+    game.FE(150, 100, 300, 200)
+    game.CE(450, 300, 300, 200, pathlib.Path('SCRIPTS') / '_main_.bot')
+    wallpaper = pygame.image.load('Images/Wallpaper.jpeg')
+    wpw, wph = wallpaper.get_size()
+    ww, wh = screen.get_size()
+    if ww < wh:
+        nwpw, nwph = ww, ww*wph/wpw
+        print('ww < wh')
+    else:
+        nwpw, nwph = wh*wpw/wph, wh
+        print('ww > wh')
+    wallpaper = pygame.transform.scale(wallpaper, (nwpw, nwph))
     while running:
         pygame.display.update()
+        cFT = time.time()
+        dT = cFT-lFT
+        lFT = cFT
         screen.fill((0, 0, 0))
+        screen.blit(wallpaper, ((ww-nwpw)/2, (wh-nwph)/2))
         game.WND.render()
         clickPos = ()
         for e in pygame.event.get():
@@ -91,14 +109,19 @@ if __name__ == '__main__':
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     paused = not paused
-            elif e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
-                clickPos = pygame.mouse.get_pos()
+            elif e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 1:
+                    clickPos = pygame.mouse.get_pos()
         if paused:
             RECT(0, 200, 200, 60, (255, 255, 255))
             TEXT(0, 200, 'RESUME', (0, 0, 0), pathlib.Path('Fonts')/'FiraCode-Regular.ttf', 25)
-            if len(clickPos) != 0:
+            if clickPos:
                 if CHECKCLICK(0, 200, 200, 60):
                     paused = False
         else:
-            pass
+            if clickPos:
+                s = screen.get_height()/1000
+                clickPos = (clickPos[0]/s, clickPos[1]/s)
+                if len(game.WND.windows):
+                    game.WND.MC(clickPos)
     pygame.quit()
