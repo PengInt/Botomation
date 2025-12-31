@@ -1,7 +1,9 @@
+<== BOT SCRIPT ==>
 SCRIPT.SetAttribute('case-sensitive', FALSE) ~ Default is already false. Include line just in case. ;
 
 %WITH @BOTUTILS
 
-
-BOTUTILS.MOVE("forward")
-BOTUTILS.ATTACK(BOTUTILS.TARGET("closest", "flamethrower"), BOTUTILS.GETWEAPON("flamethrower"))
+%DEFINE #FUNCTION LOOP () -> {
+	BOTUTILS.MOVE("forward")
+	BOTUTILS.ATTACK(BOTUTILS.TARGET("closest", "flamethrower"), BOTUTILS.GETWEAPON("flamethrower"))
+}

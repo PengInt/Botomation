@@ -23,12 +23,14 @@ SCRIPT.SetAttribute('module', TRUE)
 			#STRING type = type
 			IF (^type == 'flamethrower') -> {
 				#OBJECT &FIRE fire = NEW FIRE()
+				#FLOAT range = 5.0
 				#INT magSize = 150     ~ Ammunition maximum capacity.                                                ;
 				#FLOAT fireRate = 30.0 ~ Ammunition usage per second.                                                ;
 				#FLOAT spread = 15.0   ~ Weapon's horisontal spread (in degrees).                                    ;
 				#FLOAT speed = 5.0     ~ Initial speed of the projectiles when leaving the weapon's barrel (in m/s). ;
 				#FLOAT timeUntilShoot = 0.0;
 			} -> ELSEIF (^type == 'fists') -> {
+				#FLOAT range = 1.25
 				#INT magSize = 0
 				#FLOAT fireRate = 0.4
 				#FLOAT spread = 0.0
@@ -45,6 +47,7 @@ SCRIPT.SetAttribute('module', TRUE)
 	%DEFINE #FUNCTION &OBJECT-CREATION -> {
 		%DEFINE #ATTRIBUTE &MULTIPLE -> {
 			#FLOAT &LIST pos = [0, 0]
+			#FLOAT direction = 0
 			#FLOAT hp = 100.0
 			#FLOAT speed = 2.0
 			#WEAPON &LIST weapons = SYSTEM.GETWEAPONS()
@@ -57,11 +60,12 @@ SCRIPT.SetAttribute('module', TRUE)
 
 %DEFINE #OBJECT &CLASS ENEMY -> {
 	~ A class to make enemies ;
-	%DEFINE #FUNCTION &OBJECT-CREATION (difficulty IS #FLOAT, type IS #STRING, pos IS #LIST) -> {
+	%DEFINE #FUNCTION &OBJECT-CREATION (difficulty IS #FLOAT, type IS #STRING, pos IS #FLOAT &LIST) -> {
 		%DEFINE #ATTRIBUTE &MULTIPLE -> {
 			#STRING type = type
 			#FLOAT difficulty = difficulty
 			#FLOAT &LIST pos = pos
+			#FLOAT direction = 0.0
 			IF (^type == 'normal') -> {
 				#FLOAT hp = 100.0 * ^difficulty
 				#FLOAT speed = 1.0 * (0.875 + 0.125 * ^difficulty)
@@ -69,7 +73,7 @@ SCRIPT.SetAttribute('module', TRUE)
 			}
 		}
 		%DEFINE #METHOD ATTACK (target IS #PLAYER) -> {
-			IF (^weapon == 'fists' AND ((target.pos[0] - ^pos[0])**2 + (target.pos[1] - ^pos[1])**2)**0.5 <= ^attackRange) -> {
+			IF (^weapon.type == 'fists' AND ((target.pos[0] - ^pos[0])**2 + (target.pos[1] - ^pos[1])**2)**0.5 <= ^weapon.range) -> {
 				target.takeDamgae(5, 'physical')
 			}
 		} -> NONE

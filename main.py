@@ -37,14 +37,23 @@ def RECT2(x1: float, y1: float, x2: float, y2: float, c: tuple) -> None:
         y2 = temp
     pygame.draw.rect(screen, c, (cx+x1*s, cy-y1*s, cx+x2*s, cy-y2*s))
     print((cx+x1*s, cy-y1*s, cx+x2*s, cy-y2*s))
-def ARECT3(x: float, y: float, w: float, h: float, c: tuple) -> None:
+def ARECT3(x: float, y: float, w: float | str, h: float, c: tuple) -> None:
     s = screen.get_height()/1000
-    pygame.draw.rect(screen, c, (x*s, y*s, w*s, h*s))
+    if w == 'window width':
+        w = screen.get_width()/s
+    pygame.draw.rect(screen, c, (math.floor(x*s), math.floor(y*s), math.ceil(w*s), math.ceil(h*s)))
 def AIMG3(x: float, y: float, w: float, h: float, p: pathlib.Path) -> None:
     s = screen.get_height()/1000
     img = pygame.image.load(p)
-    img = pygame.transform.scale(img, (w*s, h*s))
-    screen.blit(img, (x*s, y*s))
+    img = pygame.transform.scale(img, (math.ceil(w*s), math.ceil(h*s)))
+    screen.blit(img, (math.floor(x*s), math.floor(y*s)))
+def IMG(x: float, y: float, w: float, h: float, p: pathlib.Path) -> None:
+    cx = screen.get_width()/2
+    cy = screen.get_height()/2
+    s = cy/500
+    img = pygame.image.load(p)
+    img = pygame.transform.scale(img, (math.ceil(w*s), math.ceil(h*s)))
+    screen.blit(img, (math.floor(cx+(x-w/2)*s), math.floor(cy-(y+h/2)*s)))
 
 if __name__ == '__main__':
     pygame.font.init()
@@ -76,42 +85,60 @@ def CHECKCLICK(x, y, w, h):
         return False
 
 paused = False
+ticking = True
 
 lFT = time.time()
 cFT = time.time()
+dragging = None
 running = True
 if __name__ == '__main__':
     game.init(screen)
     game.FE(150, 100, 300, 200)
     game.CE(450, 300, 300, 200, pathlib.Path('SCRIPTS') / '_main_.bot')
-    wallpaper = pygame.image.load('Images/Wallpaper.jpeg')
-    wpw, wph = wallpaper.get_size()
+    background = pygame.image.load('Images/Wood Grain.png')
     ww, wh = screen.get_size()
-    if ww < wh:
-        nwpw, nwph = ww, ww*wph/wpw
-        print('ww < wh')
-    else:
-        nwpw, nwph = wh*wpw/wph, wh
-        print('ww > wh')
-    wallpaper = pygame.transform.scale(wallpaper, (nwpw, nwph))
+    background = pygame.transform.scale(background, (wh/5, wh/5))
+    BGCount = (6, math.ceil(5*wh/ww)+1)
+    def drawBG():
+        for x in range(BGCount[0]):
+            for y in range(BGCount[1]):
+                screen.blit(background, ((x+game.player.pos[0])*wh/5, (y-game.player.pos[1])*wh/5))
+    def drawPlayer():
+        IMG(0, 0, wh/5, wh/5, game.player.image)
+        for weapon in game.player.weapons:
+            if weapon.type == 'flamethrower':
+                IMG(0, 0, wh/5, wh/5, pathlib.Path('Images') / 'Flammenwerfer.png')
     while running:
         pygame.display.update()
         cFT = time.time()
         dT = cFT-lFT
         lFT = cFT
         screen.fill((0, 0, 0))
-        screen.blit(wallpaper, ((ww-nwpw)/2, (wh-nwph)/2))
+        drawBG()
+        drawPlayer()
         game.WND.render()
+        game.TB.draw()
+        game.HB.draw()
         clickPos = ()
+        dp = ()
+        initHoldPos = ()
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
             elif e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_ESCAPE:
+                result = game.MKI(e.key)
+                if result == 'menu':
                     paused = not paused
+                elif result == 'pause':
+                    ticking = not ticking
+                elif result == 'FILE EXPLORER':
+                    game.FE(random.randint(0, 700), random.randint(0, 700), 300, 200)
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
-                    clickPos = pygame.mouse.get_pos()
+                    clickPos = e.pos
+            elif e.type == pygame.MOUSEMOTION:
+                dp = e.rel
+                initHoldPos = (e.pos[0] - dp[0], e.pos[1] - dp[1])
         if paused:
             RECT(0, 200, 200, 60, (255, 255, 255))
             TEXT(0, 200, 'RESUME', (0, 0, 0), pathlib.Path('Fonts')/'FiraCode-Regular.ttf', 25)
@@ -123,5 +150,10 @@ if __name__ == '__main__':
                 s = screen.get_height()/1000
                 clickPos = (clickPos[0]/s, clickPos[1]/s)
                 if len(game.WND.windows):
+                    game.TB.checkClicks(clickPos)
                     game.WND.MC(clickPos)
+            elif initHoldPos and dp:
+                s = screen.get_height()/1000
+                initHoldPos = (initHoldPos[0]/s, initHoldPos[1]/s)
+                dp = (dp[0]/s, dp[1]/s)
     pygame.quit()

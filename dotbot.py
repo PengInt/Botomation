@@ -62,7 +62,8 @@ class Token:
 			del this
 		else:
 			print(f' ->  {c('New Token:', (102, 153, 255))}        {c(str(this.type), (102, 255, 102))}{' '*(18-len(str(this.type)))}{c(f'{this.start}{this.middle}{this.end}', Token.colourcoding[this.type])}')
-			Token.tokens.append(this)
+			if not supered:
+				Token.tokens.append(this)
 			for token in Token.utokens:
 				if token.start == this.start and token.middle == this.middle and token.end == this.end and token.type == this.type:
 					#print('token overlap')
@@ -186,7 +187,18 @@ def lex():
 			elif script[i] in '<>':
 				if i+1 != len(script):
 					if script[i+1] == '=':
-						middle = script[i:i+1]
+						if i+2 != len(script):
+							if script[i+2] == '=' and script[i] == '<':
+								start = '<=='
+								middle = ''
+#||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+#||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+# RETURN TO HERE
+								end = '==>'
+							else:
+								middle = script[i:i+1]
+						else:
+							middle = script[i:i+1]
 						i += 1
 					else:
 						middle = script[i]
@@ -284,7 +296,6 @@ print('|========================|  UPDATED  TOKENS  |========================|\n
 for token in Token.tokens:
 	token.print()
 
-
 print('\033c', end='')
 print('|========================|  COLOURED SCRIPT  |========================|\n')
 
@@ -321,10 +332,10 @@ class FunctionalToken (Token):
 	def __print2(this):
 		print(f' ->  {c('Token:', (102, 153, 255))}            {c(str(this.type), (102, 255, 102))}{' '*(18-len(str(this.type)))}{c(f'{this.start}{this.middle}{this.end}', FunctionalToken.colourCoding[this.type])}')
 	def __printToken2(this):
-		if this.type == 'New Line':
+		if this.type == '\\n':
 			print('\n', end='')
 			return
-		if this.type == 'Indent':
+		if this.type == 'TAB':
 			print('    ', end='')
 			return
 		print(c(f'{this.start}{this.middle}{this.end}', FunctionalToken.colourCoding[this.type]), end=' ')
@@ -375,7 +386,6 @@ class FunctionalToken (Token):
 				
 				MDL.
 		'''
-		ntype = 'Variable'
 		if type == 'TYPE':
 			ntype = 'Type'
 		elif type == 'OPER':
@@ -416,12 +426,14 @@ class FunctionalToken (Token):
 			ntype = 'File Extension'
 		elif type == 'MDL':
 			ntype = 'Module'
+
 		super().__init__({'start': '', 'middle': contents, 'end': ''}, ntype, True)
 		this.type = type
-		if contents != '' and type != '':
+		if contents != '' or type != '':
 			FunctionalToken.tokens.append(this)
 		this.print = this.__print2
 		this.printToken = this.__printToken2
+		this.special = None
 
 class Variable:
 	variables = {}
@@ -433,10 +445,10 @@ class Variable:
 			print(c(f'\n  [ERROR] - Variable value not matching type (Evaluating variable {this.name} | Types {this.types} | Value {this.value})', (255, 51, 51)))
 
 
-print()
+print('\033c', end='')
 def parse():
 	i = 0
-	while i < len(Token.tokens)-1:
+	while i < len(Token.tokens):
 		contents = ''
 		tp = ''
 		token = Token.tokens[i]
@@ -446,34 +458,148 @@ def parse():
 			i += 1
 			continue
 		j = i
-		nT = Token.tokens[j+1]
-		if t == 'Variable' and nT.type == 'Punctuation' and nT.middle == '.':
-			tp = 'VAR'
-			while j+2 != len(Token.tokens) and nT.type in ['Punctuation', 'Attribute', 'Method']:
-				if nT.type == 'Punctuation' and nT.middle != '.':
-					print('punctuation that isn\'t \'.\'')
-					break
-				if nT.type == 'Method':
+		if i == len(Token.tokens)-1:
+			contents = token.start + token.middle + token.end
+			tp = token.type
+			if tp == 'Type':
+				tp = 'TYPE'
+			elif tp == 'Operator':
+				tp = 'OPER'
+			elif tp == 'Variable' or tp == 'Attribute':
+				tp = 'VAR'
+			elif tp == 'Boolean':
+				tp = 'BOOL'
+			elif tp == 'New Line':
+				tp = '\\n'
+			elif tp == 'Define':
+				tp = 'DEF'
+			elif tp == 'Indent':
+				tp = 'TAB'
+			elif tp == 'If Statement':
+				tp = 'IF'
+			elif tp == 'While Statement':
+				tp = 'WHILE'
+			elif tp == 'For Statement':
+				tp = 'FOR'
+			elif tp == 'Punctuation':
+				tp = 'PUNC'
+			elif tp == 'Function' or tp == 'Method':
+				tp = 'FUNC'
+			elif tp == 'Bracket':
+				tp = '()'
+			elif tp == 'String':
+				tp = 'STR'
+			elif tp == 'Integer':
+				tp = 'INT'
+			elif tp == 'Float':
+				tp = 'FLOAT'
+			elif tp == 'Global Object':
+				tp = 'GL OBJ'
+			elif tp == 'Comment':
+				tp = '~  ;'
+			elif tp == 'File Extension':
+				tp = 'FL EXT'
+			elif tp == 'Module':
+				tp = 'MDL'
+		else:
+			nT = Token.tokens[j+1]
+			if t == 'Variable' and nT.type == 'Punctuation' and nT.middle == '.':
+				tp = 'VAR'
+				while j+2 != len(Token.tokens) and nT.type in ['Punctuation', 'Attribute', 'Method']:
+					if nT.type == 'Punctuation' and nT.middle != '.':
+						break
+					j += 1
+					nT = Token.tokens[j+1]
+				section = Token.tokens[i:j+1]
+				i = j
+				cPath = ''
+				for tk in section:
+					if tk.type == 'Punctuation':
+						cPath += '/'
+					elif tk.type in ['Variable', 'Attribute', 'Method']:
+						if tk.type == 'Method':
+							tp = 'FUNC'
+						cPath += tk.middle
+				contents = cPath
+				if len(cPath) == 0:
+					print(c('\n\n   ----------------- \n  | ERROR IN PARSER |\n   ----------------- ', (255, 102, 0)))
+					exit()
+				if cPath[0] == '/' or cPath[-1] == '/':
+					print(c('ERROR: Unexpected punctuation: (Evaluating \'.\')', (255, 0, 0)))
+					exit()
+			else:
+				contents = token.start + token.middle + token.end
+				tp = token.type
+				if tp == 'Type':
+					tp = 'TYPE'
+				elif tp == 'Operator':
+					tp = 'OPER'
+				elif tp == 'Variable' or tp == 'Attribute':
+					tp = 'VAR'
+				elif tp == 'Boolean':
+					tp = 'BOOL'
+				elif tp == 'New Line':
+					tp = '\\n'
+				elif tp == 'Define':
+					tp = 'DEF'
+				elif tp == 'Indent':
+					tp = 'TAB'
+				elif tp == 'If Statement':
+					tp = 'IF'
+				elif tp == 'While Statement':
+					tp = 'WHILE'
+				elif tp == 'For Statement':
+					tp = 'FOR'
+				elif tp == 'Punctuation':
+					tp = 'PUNC'
+				elif tp == 'Function' or tp == 'Method':
 					tp = 'FUNC'
-				j += 1
-				nT = Token.tokens[j+1]
-			section = Token.tokens[i:j+1]
-			i = j
-			cPath = ''
-			for tk in section:
-				if tk.type == 'Punctuation':
-					cPath += '/'
-				elif tk.type in ['Variable', 'Attribute', 'Method']:
-					cPath += tk.middle
-			contents = cPath
-			if len(cPath) == 0:
-				print(c('\n\n   ----------------- \n  | ERROR IN PARSER |\n   ----------------- ', (255, 102, 0)))
-				exit()
-			if cPath[0] == '/' or cPath[-1] == '/':
-				print(c('ERROR: Unexpected punctuation: (Evaluating \'.\')', (255, 0, 0)))
-				#exit()
+				elif tp == 'Bracket':
+					tp = '()'
+				elif tp == 'String':
+					tp = 'STR'
+				elif tp == 'Integer':
+					tp = 'INT'
+				elif tp == 'Float':
+					tp = 'FLOAT'
+				elif tp == 'Global Object':
+					tp = 'GL OBJ'
+				elif tp == 'Comment':
+					tp = '~  ;'
+				elif tp == 'File Extension':
+					tp = 'FL EXT'
+				elif tp == 'Module':
+					tp = 'MDL'
 		FunctionalToken(contents, tp)
+		if FunctionalToken.tokens[-1].type == '\\n':
+			while FunctionalToken.tokens[len(FunctionalToken.tokens)-2].type in ['\\n', 'TAB']:
+				FunctionalToken.tokens.pop(len(FunctionalToken.tokens)-2)
 		i += 1
 parse()
+
+print('\033c', end='')
 for token in FunctionalToken.tokens:
 	token.printToken()
+
+for i in range(len(FunctionalToken.tokens)-1, -1, -1):
+	token = FunctionalToken.tokens[i]
+	if token.type == 'TYPE':
+		if token.middle[0] == '&':
+			if token.special != None:
+				try:
+					FunctionalToken.tokens[i-1].special = token.middle[1:] + '|' + token.special
+					FunctionalToken.tokens.pop(i)
+				except IndexError:
+					print(c('ERROR: Unexpected character at start of script: (Evaluating \'&\')', (255, 0, 0)))
+					exit()
+			else:
+				try:
+					FunctionalToken.tokens[i-1].special = token.middle[1:]
+					FunctionalToken.tokens.pop(i)
+				except IndexError:
+					print(c('ERROR: Unexpected character at start of script: (Evaluating \'&\')', (255, 0, 0)))
+					exit()
+		elif token.middle[0] == '#':
+			if token.special != None:
+				token.special = token.middle[1:] + '|' + token.special
+				token.middle = '#MULTIPLE'
