@@ -7,7 +7,7 @@ SCRIPT.SetAttribute('module', TRUE)
 
 %DEFINE #OBJECT &CLASS FIRE -> {
 	~ A class to store parameters for flamethrower fires (duration, DPS, ease to put out). ;
-	%DEFINE #FUNCTION &OBJECT-CREATION () -> {
+	%DEFINE #FUNCTION &CONSTRUCTOR () -> {
 		%DEFINE #ATTRIBUTE &FLOAT &MULTIPLE -> {
 			damage = 2.0   ~ Damage (typical HP for a creature (at the start) is 100). ;
 			interval = 0.1 ~ Interval between target.fireTick() calls (in s).          ;
@@ -18,7 +18,7 @@ SCRIPT.SetAttribute('module', TRUE)
 
 %DEFINE #OBJECT &CLASS WEAPON -> {
 	~ An object class for weapons, such as the starting flamethrower. ;
-	%DEFINE #FUNCTION &OBJECT-CREATION (type) -> {
+	%DEFINE #FUNCTION &CONSTRUCTOR (type) -> {
 		%DEFINE #ATTRIBUTE &MULTIPLE -> {
 			#STRING type = type
 			IF (^type == 'flamethrower') -> {
@@ -44,7 +44,7 @@ SCRIPT.SetAttribute('module', TRUE)
 
 %DEFINE #OBJECT &CLASS PLAYER -> {
 	~ Player class (object class incase multiplayer gets added :D) ;
-	%DEFINE #FUNCTION &OBJECT-CREATION -> {
+	%DEFINE #FUNCTION &CONSTRUCTOR -> {
 		%DEFINE #ATTRIBUTE &MULTIPLE -> {
 			#FLOAT &LIST pos = [0, 0]
 			#FLOAT direction = 0
@@ -60,7 +60,7 @@ SCRIPT.SetAttribute('module', TRUE)
 
 %DEFINE #OBJECT &CLASS ENEMY -> {
 	~ A class to make enemies ;
-	%DEFINE #FUNCTION &OBJECT-CREATION (difficulty IS #FLOAT, type IS #STRING, pos IS #FLOAT &LIST) -> {
+	%DEFINE #FUNCTION &CONSTRUCTOR (difficulty IS #FLOAT, type IS #STRING, pos IS #FLOAT &LIST) -> {
 		%DEFINE #ATTRIBUTE &MULTIPLE -> {
 			#STRING type = type
 			#FLOAT difficulty = difficulty

@@ -101,7 +101,8 @@ def fromJson(string):
 	return Token({'start': loads['start'], 'middle': loads['middle'], 'end': loads['end']}, loads['type'])
 
 
-file = open('BOTUTILS.bot', 'r')
+file = open('testDotBotScript.bot', 'r')
+#file = open('BOTUTILS.bot', 'r')
 script = file.read()
 file.close()
 #script = 'SCRIPT.SetAttribute(\'case-sensitive\', FALSE)\n%DEFINE #INT &FLOAT &LIST variable = [2, 44.3, 0.000001]'
@@ -134,11 +135,11 @@ def lex():
 		end = ''
 		if script[i] == '\n':
 			type = 'New Line'
-		elif script[i] in ['@', '#', '&', '%']:
+		elif script[i] in '@#&%':
 			start = script[i]
 			i += 1
 			j = i
-			while script[j+1] not in ' \n()[]{}\'"/<>,*&^%$#@!~;:|+-=_`?\\' and j+2 != len(script):
+			while script[j+1] not in ' \t\n()[]{}\'"/<>,*&^%$#@!~;:|+-=_`?\\' and j+2 != len(script):
 				j += 1
 			middle = script[i:j+1]
 			type = ''
@@ -435,15 +436,6 @@ class FunctionalToken (Token):
 		this.printToken = this.__printToken2
 		this.special = None
 
-class Variable:
-	variables = {}
-	def __init__(this, name: str, types: list, value):
-		this.name = name
-		this.types = types
-		this.value = value
-		if type(this.value) not in types:
-			print(c(f'\n  [ERROR] - Variable value not matching type (Evaluating variable {this.name} | Types {this.types} | Value {this.value})', (255, 51, 51)))
-
 
 print('\033c', end='')
 def parse():
@@ -603,3 +595,107 @@ for i in range(len(FunctionalToken.tokens)-1, -1, -1):
 			if token.special != None:
 				token.special = token.middle[1:] + '|' + token.special
 				token.middle = '#MULTIPLE'
+
+
+class Variable:
+	variables = {}
+	forGeneratedExpression = {}
+	def __init__(this, name: str, types: list, value):
+		this.name = name
+		this.types = types
+		this.value = value
+		if type(this.value) not in this.types:
+			print(c(f'\n  [ERROR] - Variable value not matching type (Evaluating variable {this.name} | Types {this.types} | Value {this.value})', (255, 51, 51)))
+			exit()
+		if this.name in Variable.variables:
+			print(c(f'\n  [ERROR] - Variable with name {this.name} already exists', (255, 51, 51)))
+		Variable.variables[this.name] = this
+		Variable.forGeneratedExpression[this.name] = this.value
+	@classmethod
+	def update(cls, var: str, nVal):
+		if var not in cls.variables:
+			print(c(f'\n  [ERROR] - Variable with name {var} doesn\'t exist', (255, 51, 51)))
+		var = cls.variables[var]
+		var.value = nVal
+		if type(var.value) not in var.types:
+			print(c(f'\n  [ERROR] - Variable value not matching type (Evaluating variable {var.name} | Types {var.types} | Value {var.value})', (255, 51, 51)))
+			exit()
+		
+
+
+
+
+i = -1
+def nextToken(setNext=True) -> FunctionalToken:
+	global i
+	if setNext:
+		global FT
+		i += 1
+		if i == len(FunctionalToken.tokens):
+			raise IndexError
+		FT = FunctionalToken.tokens[i]
+		FT.print()
+		return FT
+	else:
+		if i+1 == len(FunctionalToken.tokens):
+			raise IndexError
+		FunctionalToken.tokens[i+1].print()
+		return FunctionalToken.tokens[i+1]
+
+def evalExpr(genExpr):
+	pass
+
+FT = FunctionalToken.tokens[0]
+while i < len(FunctionalToken.tokens)-1:
+	nextToken()
+	
+	if FT.type == 'DEF':
+		nextToken()
+		if FT.type == 'TYPE':
+			if FT.middle == '#MULTIPLE':
+				nVarType = FT.special.split('|')
+			else:
+				nVarType = [FT.middle[1:]]
+			nextToken()
+			if FT.type == 'VAR':
+				nVarName = FT.middle
+				nextToken()
+				if FT.type == 'OPER' and FT.middle == '=':
+					nVarVal = None
+					generatedExpression = []
+					parlvl = 0
+					while FT.type != '\\n' and i < len(FunctionalToken.tokens)-1:
+						nextToken()
+						if FT.type == '\\n':
+							break
+						appendTo = generatedExpression
+						for i in range(parlvl):
+							appendTo = appendTo[len(appendTo)]
+						if FT.type == '()' and FT.middle == '(':
+							appendTo.append([])
+							parlvl += 1
+							continue
+						if FT.type == '()' and FT.middle == ')':
+							parlvl -= 1
+							continue
+						if FT.type == 'INT' or FT.type == 'FLOAT':
+							appendTo.append(FT)
+							continue
+						if FT.type == 'OPER':
+							appendTo.append(FT)
+							continue
+					for i in range(len(generatedExpression)):
+						print(generatedExpression[i].type, end=' ')
+					print()
+				elif FT.type == 'OPER' and FT.middle == '->':
+					continue
+					print('making class or function probably - ignore this')
+				else:
+					print(c(f'ERROR: Unexpected token (Evaluating {FT.middle})', (255, 0, 0)))
+					exit()
+			else:
+				print(c(f'ERROR: Unexpected token (Evaluating {FT.middle})', (255, 0, 0)))
+				exit()
+		else:
+			print(c(f'ERROR: Unexpected token (No type specified after %DEFINE statement) (Evaluating {FT.middle}, which is a {FT.type})', (255, 0, 0)))
+			exit()
